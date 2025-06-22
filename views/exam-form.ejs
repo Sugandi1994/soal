@@ -373,6 +373,21 @@
       questionForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        // Sebelum validasi, aktifkan hanya input yang terlihat dan nonaktifkan yang tersembunyi
+        const formTypes = [mcForm, shortForm, essayForm];
+        formTypes.forEach((formType) => {
+          const inputs = formType.querySelectorAll('input, textarea, select');
+          if (formType.style.display === 'none') {
+            inputs.forEach((input) => {
+              input.disabled = true;
+            });
+          } else {
+            inputs.forEach((input) => {
+              input.disabled = false;
+            });
+          }
+        });
+
         // Validasi form HTML5
         if (!questionForm.checkValidity()) {
           questionForm.reportValidity();

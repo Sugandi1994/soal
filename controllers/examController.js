@@ -48,70 +48,71 @@ exports.showForm = (req, res) => {
 
 exports.addQuestion = (req, res) => {
   console.log('Received form data:', req.body);
-  
+  console.log('Headers:', req.headers);
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.originalUrl);
+
   const { type, question, opt1, opt2, opt3, opt4, answer } = req.body;
-  
+
   try {
     if (!question || !answer) {
       throw new Error('Pertanyaan dan jawaban harus diisi');
     }
-    
+
     if (type === 'mc') {
       if (currentExam.mc.length >= 50) {
         throw new Error('Maksimal 50 soal pilihan ganda');
       }
-      
+
       if (!opt1 || !opt2 || !opt3 || !opt4) {
         throw new Error('Semua opsi harus diisi untuk soal pilihan ganda');
       }
-      
+
       currentExam.mc.push({
         id: uuidv4(),
         question,
         options: [opt1, opt2, opt3, opt4],
-        answer
+        answer,
       });
-    } 
-    else if (type === 'short') {
+    } else if (type === 'short') {
       if (currentExam.shortAnswer.length >= 10) {
         throw new Error('Maksimal 10 soal isian');
       }
-      
+
       currentExam.shortAnswer.push({
         id: uuidv4(),
         question,
-        answer
+        answer,
       });
-    } 
-    else if (type === 'essay') {
+    } else if (type === 'essay') {
       if (currentExam.essay.length >= 10) {
         throw new Error('Maksimal 10 soal esai');
       }
-      
+
       currentExam.essay.push({
         id: uuidv4(),
         question,
-        answer
+        answer,
       });
     }
-    
+
     saveData();
-    
+
     req.flash('success', 'Soal berhasil ditambahkan!');
-    
+
     // Kirim respons JSON untuk AJAX
-    res.json({ 
+    res.json({
       success: true,
       exam: currentExam,
-      message: 'Soal berhasil ditambahkan!'
+      message: 'Soal berhasil ditambahkan!',
     });
   } catch (err) {
     console.error('Error adding question:', err);
-    
+
     // Kirim respons error untuk AJAX
     res.status(400).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
