@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Pembuat Soal Ujian</title>
+  <base href="/">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1><i class="fas fa-file-alt"></i> Aplikasi Pembuat Soal Ujian</h1>
+      <p>Buat, impor, dan ekspor soal ujian dengan mudah</p>
+    </header>
+
+    <div id="message-container">
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i>
+          <% errors.forEach(err => { %>
+            <p><%= err %></p>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (success && success.length) { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
+          <% success.forEach(msg => { %>
+            <p><%= msg %></p>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-file-import"></i> Impor Soal dari Word
+      </div>
+      <div class="card-body">
+        <form action="/import" method="post" enctype="multipart/form-data" id="importForm">
+          <div class="form-group">
+            <label for="wordFile"><i class="fas fa-file-word"></i> Pilih File Dokumen (.docx)</label>
+            <input type="file" class="form-control" name="wordFile" id="wordFile" accept=".docx" required>
+          </div>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-upload"></i> Import dari Word
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-plus-circle"></i> Tambah Soal Baru
+      </div>
+      <div class="card-body">
+        <form id="questionForm">
+          <div class="form-group">
+            <label for="questionType"><i class="fas fa-question-circle"></i> Tipe Soal</label>
+            <select class="form-control" name="type" id="questionType">
+              <option value="mc">Pilihan Ganda</option>
+              <option value="short">Isian Singkat</option>
+              <option value="essay">Esai</option>
+            </select>
+          </div>
+
+          <div class="form-type" id="mcForm">
+            <div class="form-group">
+              <label for="mcQuestion"><i class="fas fa-question"></i> Pertanyaan</label>
+              <textarea class="form-control" name="question" id="mcQuestion" placeholder="Masukkan pertanyaan..." required></textarea>
+            </div>
+            
+            <label><i class="fas fa-list"></i> Opsi Jawaban</label>
+            <div class="options-grid">
+              <div class="form-group">
+                <input type="text" class="form-control" name="opt1" placeholder="Opsi A" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="opt2" placeholder="Opsi B" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="opt3" placeholder="Opsi C" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="opt4" placeholder="Opsi D" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="mcAnswer"><i class="fas fa-check-circle"></i> Jawaban Benar</label>
+              <input type="text" class="form-control" name="answer" placeholder="Masukkan huruf jawaban benar (A/B/C/D)" required>
+            </div>
+          </div>
+
+          <div class="form-type" id="shortForm" style="display: none;">
+            <div class="form-group">
+              <label for="shortQuestion"><i class="fas fa-question"></i> Pertanyaan</label>
+              <textarea class="form-control" name="question" id="shortQuestion" placeholder="Masukkan pertanyaan..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="shortAnswer"><i class="fas fa-check-circle"></i> Jawaban</label>
+              <input type="text" class="form-control" name="answer" placeholder="Masukkan jawaban singkat" required>
+            </div>
+          </div>
+
+          <div class="form-type" id="essayForm" style="display: none;">
+            <div class="form-group">
+              <label for="essayQuestion"><i class="fas fa-question"></i> Pertanyaan</label>
+              <textarea class="form-control" name="question" id="essayQuestion" placeholder="Masukkan pertanyaan..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="essayAnswer"><i class="fas fa-check-circle"></i> Jawaban</label>
+              <textarea class="form-control" name="answer" id="essayAnswer" placeholder="Masukkan jawaban esai" required></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-block" id="submitBtn">
+            <i class="fas fa-plus"></i> Tambah Soal
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="preview-section">
+      <div class="preview-header">
+        <h2><i class="fas fa-eye"></i> Preview Soal</h2>
+        <a href="/export" class="btn btn-success">
+          <i class="fas fa-file-export"></i> Ekspor ke Word
+        </a>
+      </div>
+
+      <div id="preview-container">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-list-ol"></i> Soal Pilihan Ganda 
+            <span class="count-badge"><%= exam.mc.length %>/50</span>
+          </div>
+          <div class="card-body">
+            <% if (exam.mc.length === 0) { %>
+              <p class="text-center">Belum ada soal pilihan ganda</p>
+            <% } else { %>
+              <div class="question-list">
+                <% exam.mc.forEach((q, i) => { %>
+                  <div class="question-card">
+                    <span class="question-type">Pilihan Ganda</span>
+                    <h3><%= i+1 %>. <%= q.question %></h3>
+                    <p><strong>A.</strong> <%= q.options[0] %></p>
+                    <p><strong>B.</strong> <%= q.options[1] %></p>
+                    <p><strong>C.</strong> <%= q.options[2] %></p>
+                    <p><strong>D.</strong> <%= q.options[3] %></p>
+                    <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                  </div>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-pen"></i> Soal Isian Singkat 
+            <span class="count-badge"><%= exam.shortAnswer.length %>/10</span>
+          </div>
+          <div class="card-body">
+            <% if (exam.shortAnswer.length === 0) { %>
+              <p class="text-center">Belum ada soal isian singkat</p>
+            <% } else { %>
+              <div class="question-list">
+                <% exam.shortAnswer.forEach((q, i) => { %>
+                  <div class="question-card">
+                    <span class="question-type">Isian Singkat</span>
+                    <h3><%= i+1 %>. <%= q.question %></h3>
+                    <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                  </div>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-align-left"></i> Soal Esai 
+            <span class="count-badge"><%= exam.essay.length %>/10</span>
+          </div>
+          <div class="card-body">
+            <% if (exam.essay.length === 0) { %>
+              <p class="text-center">Belum ada soal esai</p>
+            <% } else { %>
+              <div class="question-list">
+                <% exam.essay.forEach((q, i) => { %>
+                  <div class="question-card">
+                    <span class="question-type">Esai</span>
+                    <h3><%= i+1 %>. <%= q.question %></h3>
+                    <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                  </div>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const questionType = document.getElementById('questionType');
+      const mcForm = document.getElementById('mcForm');
+      const shortForm = document.getElementById('shortForm');
+      const essayForm = document.getElementById('essayForm');
+      const questionForm = document.getElementById('questionForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const messageContainer = document.getElementById('message-container');
+      const previewContainer = document.getElementById('preview-container');
+      
+      // Fungsi untuk menampilkan form yang sesuai
+      function showActiveForm() {
+        mcForm.style.display = 'none';
+        shortForm.style.display = 'none';
+        essayForm.style.display = 'none';
+        
+        if (questionType.value === 'mc') {
+          mcForm.style.display = 'block';
+        } else if (questionType.value === 'short') {
+          shortForm.style.display = 'block';
+        } else if (questionType.value === 'essay') {
+          essayForm.style.display = 'block';
+        }
+      }
+      
+      // Event listener untuk perubahan tipe soal
+      questionType.addEventListener('change', showActiveForm);
+      
+      // Inisialisasi tampilan form
+      showActiveForm();
+      
+      // Tangani pengiriman form dengan AJAX
+      questionForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Tampilkan loading
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menambahkan...';
+        submitBtn.disabled = true;
+        
+        try {
+          // Kumpulkan data form
+          const formData = new FormData(questionForm);
+          
+          // Kirim data ke server
+          const response = await fetch('/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(formData)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            // Tampilkan pesan sukses
+            messageContainer.innerHTML = `
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <p>${result.message}</p>
+              </div>
+            `;
+            
+            // Reset form
+            questionForm.reset();
+            
+            // Perbarui preview
+            previewContainer.innerHTML = `
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-list-ol"></i> Soal Pilihan Ganda 
+                  <span class="count-badge">${result.exam.mc.length}/50</span>
+                </div>
+                <div class="card-body">
+                  ${result.exam.mc.length === 0 ? 
+                    '<p class="text-center">Belum ada soal pilihan ganda</p>' : 
+                    `<div class="question-list">
+                      ${result.exam.mc.map((q, i) => `
+                        <div class="question-card">
+                          <span class="question-type">Pilihan Ganda</span>
+                          <h3>${i+1}. ${q.question}</h3>
+                          <p><strong>A.</strong> ${q.options[0]}</p>
+                          <p><strong>B.</strong> ${q.options[1]}</p>
+                          <p><strong>C.</strong> ${q.options[2]}</p>
+                          <p><strong>D.</strong> ${q.options[3]}</p>
+                          <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        </div>
+                      `).join('')}
+                    </div>`
+                  }
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-pen"></i> Soal Isian Singkat 
+                  <span class="count-badge">${result.exam.shortAnswer.length}/10</span>
+                </div>
+                <div class="card-body">
+                  ${result.exam.shortAnswer.length === 0 ? 
+                    '<p class="text-center">Belum ada soal isian singkat</p>' : 
+                    `<div class="question-list">
+                      ${result.exam.shortAnswer.map((q, i) => `
+                        <div class="question-card">
+                          <span class="question-type">Isian Singkat</span>
+                          <h3>${i+1}. ${q.question}</h3>
+                          <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        </div>
+                      `).join('')}
+                    </div>`
+                  }
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-align-left"></i> Soal Esai 
+                  <span class="count-badge">${result.exam.essay.length}/10</span>
+                </div>
+                <div class="card-body">
+                  ${result.exam.essay.length === 0 ? 
+                    '<p class="text-center">Belum ada soal esai</p>' : 
+                    `<div class="question-list">
+                      ${result.exam.essay.map((q, i) => `
+                        <div class="question-card">
+                          <span class="question-type">Esai</span>
+                          <h3>${i+1}. ${q.question}</h3>
+                          <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        </div>
+                      `).join('')}
+                    </div>`
+                  }
+                </div>
+              </div>
+            `;
+            
+          } else {
+            // Tampilkan pesan error
+            messageContainer.innerHTML = `
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${result.message}</p>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          messageContainer.innerHTML = `
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>Terjadi kesalahan saat menambahkan soal</p>
+            </div>
+          `;
+        } finally {
+          // Kembalikan tombol ke keadaan semula
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          
+          // Sembunyikan pesan setelah 5 detik
+          setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+              alert.style.opacity = '0';
+              setTimeout(() => alert.remove(), 300);
+            });
+          }, 5000);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
