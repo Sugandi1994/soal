@@ -41,9 +41,10 @@ function generateMcQuestions(questions) {
       );
       
       q.options.forEach((opt, j) => {
+        const optionText = typeof opt === 'object' && opt !== null ? opt.text : opt;
         elements.push(
           new Paragraph({
-            text: `${String.fromCharCode(65 + j)}. ${opt}`,
+            text: `${String.fromCharCode(65 + j)}. ${optionText}`,
             indent: { left: 400 }
           })
         );
