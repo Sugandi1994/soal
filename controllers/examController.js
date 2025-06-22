@@ -2,8 +2,38 @@ const Exam = require('../models/questionModel');
 const { parseDocx } = require('../utils/wordParser');
 const { generateDocx } = require('../utils/docxGenerator');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+
+const dataFilePath = path.join(__dirname, '../data.json');
 
 let currentExam = new Exam();
+
+// Fungsi untuk load data dari file JSON
+function loadData() {
+  try {
+    if (fs.existsSync(dataFilePath)) {
+      const data = fs.readFileSync(dataFilePath, 'utf-8');
+      if (data) {
+        currentExam = Object.assign(new Exam(), JSON.parse(data));
+      }
+    }
+  } catch (err) {
+    console.error('Error loading data:', err);
+  }
+}
+
+// Fungsi untuk simpan data ke file JSON
+function saveData() {
+  try {
+    fs.writeFileSync(dataFilePath, JSON.stringify(currentExam, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving data:', err);
+  }
+}
+
+// Load data saat modul di-load
+loadData();
 
 exports.showForm = (req, res) => {
   const errors = req.flash('error');
@@ -65,6 +95,8 @@ exports.addQuestion = (req, res) => {
       });
     }
     
+    saveData();
+    
     req.flash('success', 'Soal berhasil ditambahkan!');
     
     // Kirim respons JSON untuk AJAX
@@ -84,6 +116,25 @@ exports.addQuestion = (req, res) => {
   }
 };
 
+exports.resetQuestions = (req, res) => {
+  try {
+    currentExam = new Exam();
+    saveData();
+    req.flash('success', 'Soal berhasil direset!');
+    res.json({
+      success: true,
+      exam: currentExam,
+      message: 'Soal berhasil direset!'
+    });
+  } catch (err) {
+    console.error('Error resetting questions:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mereset soal'
+    });
+  }
+};
+
 exports.importDocx = async (req, res) => {
   if (!req.file) {
     req.flash('error', 'Tidak ada file yang diunggah');
@@ -93,6 +144,7 @@ exports.importDocx = async (req, res) => {
   try {
     const examData = await parseDocx(req.file.buffer);
     currentExam = examData;
+    saveData();
     req.flash('success', 'Soal berhasil diimpor dari Word!');
     res.redirect('/');
   } catch (err) {

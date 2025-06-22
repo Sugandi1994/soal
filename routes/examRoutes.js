@@ -8,5 +8,6 @@ router.get('/', examController.showForm);
 router.post('/add', examController.addQuestion);
 router.post('/import', upload.single('wordFile'), examController.importDocx);
 router.get('/export', examController.exportDocx);
+router.post('/reset', examController.resetQuestions);
 
 module.exports = router;
