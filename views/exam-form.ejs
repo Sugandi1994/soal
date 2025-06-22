@@ -75,7 +75,7 @@
         <i class="fas fa-plus-circle"></i> Tambah Soal Baru
       </header>
       <div class="card-body">
-        <form id="questionForm" aria-describedby="question-form-desc" novalidate>
+        <form id="questionForm" aria-describedby="question-form-desc" novalidate enctype="multipart/form-data">
           <div class="form-group">
             <label for="questionType"
               ><i class="fas fa-question-circle"></i> Tipe Soal</label
@@ -105,6 +105,8 @@
                 required
                 aria-required="true"
               ></textarea>
+              <label for="mcImage" style="margin-top: 5px;">Upload Gambar Pertanyaan (opsional)</label>
+              <input type="file" name="questionImage" id="mcImage" accept="image/*" />
             </div>
 
             <label><i class="fas fa-list"></i> Opsi Jawaban</label>
@@ -118,6 +120,8 @@
                   required
                   aria-required="true"
                 />
+                <label for="opt1Image" style="margin-top: 5px;">Upload Gambar Opsi A (opsional)</label>
+                <input type="file" name="opt1Image" id="opt1Image" accept="image/*" />
               </div>
               <div class="form-group">
                 <input
@@ -128,6 +132,8 @@
                   required
                   aria-required="true"
                 />
+                <label for="opt2Image" style="margin-top: 5px;">Upload Gambar Opsi B (opsional)</label>
+                <input type="file" name="opt2Image" id="opt2Image" accept="image/*" />
               </div>
               <div class="form-group">
                 <input
@@ -138,6 +144,8 @@
                   required
                   aria-required="true"
                 />
+                <label for="opt3Image" style="margin-top: 5px;">Upload Gambar Opsi C (opsional)</label>
+                <input type="file" name="opt3Image" id="opt3Image" accept="image/*" />
               </div>
               <div class="form-group">
                 <input
@@ -148,6 +156,8 @@
                   required
                   aria-required="true"
                 />
+                <label for="opt4Image" style="margin-top: 5px;">Upload Gambar Opsi D (opsional)</label>
+                <input type="file" name="opt4Image" id="opt4Image" accept="image/*" />
               </div>
             </div>
 
@@ -187,6 +197,8 @@
                 required
                 aria-required="true"
               ></textarea>
+              <label for="shortImage" style="margin-top: 5px;">Upload Gambar Pertanyaan (opsional)</label>
+              <input type="file" name="questionImage" id="shortImage" accept="image/*" />
             </div>
             <div class="form-group">
               <label for="shortAnswer"
@@ -200,6 +212,8 @@
                 required
                 aria-required="true"
               />
+              <label for="shortAnswerImage" style="margin-top: 5px;">Upload Gambar Jawaban (opsional)</label>
+              <input type="file" name="answerImage" id="shortAnswerImage" accept="image/*" />
             </div>
           </div>
 
@@ -222,6 +236,8 @@
                 required
                 aria-required="true"
               ></textarea>
+              <label for="essayImage" style="margin-top: 5px;">Upload Gambar Pertanyaan (opsional)</label>
+              <input type="file" name="questionImage" id="essayImage" accept="image/*" />
             </div>
             <div class="form-group">
               <label for="essayAnswer"
@@ -235,6 +251,8 @@
                 required
                 aria-required="true"
               ></textarea>
+              <label for="essayAnswerImage" style="margin-top: 5px;">Upload Gambar Jawaban (opsional)</label>
+              <input type="file" name="answerImage" id="essayAnswerImage" accept="image/*" />
             </div>
           </div>
 
@@ -269,19 +287,42 @@
             <span class="count-badge"><%= exam.mc.length %>/50</span>
           </header>
           <div class="card-body">
-            <% if (exam.mc.length === 0) { %>
+            <% if (!exam.mc || exam.mc.length === 0) { %>
             <p class="text-center">Belum ada soal pilihan ganda</p>
             <% } else { %>
             <div class="question-list">
-              <% exam.mc.forEach((q, i) => { %>
+              <% exam.mc.filter(q => q != null).forEach((q, i) => { %>
               <article class="question-card" aria-label="Soal Pilihan Ganda nomor <%= i+1 %>">
                 <span class="question-type">Pilihan Ganda</span>
-                <h3><%= i + 1 %>. <%= q.question %></h3>
-                <p><strong>A.</strong> <%= q.options[0] %></p>
-                <p><strong>B.</strong> <%= q.options[1] %></p>
-                <p><strong>C.</strong> <%= q.options[2] %></p>
-                <p><strong>D.</strong> <%= q.options[3] %></p>
-                <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                <h3><%= i + 1 %>. <%= q?.question || '' %></h3>
+                <% if (q?.questionImage) { %>
+                  <img src="<%= q.questionImage %>" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;" />
+                <% } %>
+                <p>
+                  <strong>A.</strong> <%= q?.options?.[0]?.text || '' %>
+                  <% if (q?.options?.[0]?.image) { %>
+                    <img src="<%= q.options[0].image %>" alt="Gambar opsi A" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
+                <p>
+                  <strong>B.</strong> <%= q?.options?.[1]?.text || '' %>
+                  <% if (q?.options?.[1]?.image) { %>
+                    <img src="<%= q.options[1].image %>" alt="Gambar opsi B" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
+                <p>
+                  <strong>C.</strong> <%= q?.options?.[2]?.text || '' %>
+                  <% if (q?.options?.[2]?.image) { %>
+                    <img src="<%= q.options[2].image %>" alt="Gambar opsi C" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
+                <p>
+                  <strong>D.</strong> <%= q?.options?.[3]?.text || '' %>
+                  <% if (q?.options?.[3]?.image) { %>
+                    <img src="<%= q.options[3].image %>" alt="Gambar opsi D" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
+                <p><strong>Jawaban:</strong> <%= q?.answer || '' %></p>
               </article>
               <% }); %>
             </div>
@@ -295,15 +336,23 @@
             <span class="count-badge"><%= exam.shortAnswer.length %>/10</span>
           </header>
           <div class="card-body">
-            <% if (exam.shortAnswer.length === 0) { %>
+            <% if (!exam.shortAnswer || exam.shortAnswer.length === 0) { %>
             <p class="text-center">Belum ada soal isian singkat</p>
             <% } else { %>
             <div class="question-list">
-              <% exam.shortAnswer.forEach((q, i) => { %>
+              <% exam.shortAnswer.filter(q => q != null).forEach((q, i) => { %>
               <article class="question-card" aria-label="Soal Isian Singkat nomor <%= i+1 %>">
                 <span class="question-type">Isian Singkat</span>
-                <h3><%= i + 1 %>. <%= q.question %></h3>
-                <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                <h3><%= i + 1 %>. <%= q?.question || '' %></h3>
+                <% if (q?.questionImage) { %>
+                  <img src="<%= q.questionImage %>" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;" />
+                <% } %>
+                <p>
+                  <strong>Jawaban:</strong> <%= q?.answer || '' %>
+                  <% if (q?.answerImage) { %>
+                    <img src="<%= q.answerImage %>" alt="Gambar jawaban" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
               </article>
               <% }); %>
             </div>
@@ -317,15 +366,23 @@
             <span class="count-badge"><%= exam.essay.length %>/10</span>
           </header>
           <div class="card-body">
-            <% if (exam.essay.length === 0) { %>
+            <% if (!exam.essay || exam.essay.length === 0) { %>
             <p class="text-center">Belum ada soal esai</p>
             <% } else { %>
             <div class="question-list">
-              <% exam.essay.forEach((q, i) => { %>
+              <% exam.essay.filter(q => q != null).forEach((q, i) => { %>
               <article class="question-card" aria-label="Soal Esai nomor <%= i+1 %>">
                 <span class="question-type">Esai</span>
-                <h3><%= i + 1 %>. <%= q.question %></h3>
-                <p><strong>Jawaban:</strong> <%= q.answer %></p>
+                <h3><%= i + 1 %>. <%= q?.question || '' %></h3>
+                <% if (q?.questionImage) { %>
+                  <img src="<%= q.questionImage %>" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;" />
+                <% } %>
+                <p>
+                  <strong>Jawaban:</strong> <%= q?.answer || '' %>
+                  <% if (q?.answerImage) { %>
+                    <img src="<%= q.answerImage %>" alt="Gambar jawaban" style="max-width: 150px; display: block; margin-bottom: 5px;" />
+                  <% } %>
+                </p>
               </article>
               <% }); %>
             </div>
@@ -406,13 +463,25 @@
           // Kirim data ke server
           const response = await fetch('/add', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams(formData),
+            body: formData,
           });
 
-          const result = await response.json();
+          let result;
+          try {
+            result = await response.clone().json();
+          } catch (e) {
+            const text = await response.text();
+            console.error('Response is not valid JSON:', text);
+            messageContainer.innerHTML = `
+              <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                <p>Terjadi kesalahan server: ${text}</p>
+              </div>
+            `;
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+          }
 
           if (result.success) {
             // Tampilkan pesan sukses
@@ -439,18 +508,60 @@
                       ? '<p class="text-center">Belum ada soal pilihan ganda</p>'
                       : `<div class="question-list">
                     ${result.exam.mc
+                      .filter(q => q != null)
                       .map(
                         (q, i) => `
                       <article class="question-card" aria-label="Soal Pilihan Ganda nomor ${
                         i + 1
                       }">
                         <span class="question-type">Pilihan Ganda</span>
-                        <h3>${i + 1}. ${q.question}</h3>
-                        <p><strong>A.</strong> ${q.options[0]}</p>
-                        <p><strong>B.</strong> ${q.options[1]}</p>
-                        <p><strong>C.</strong> ${q.options[2]}</p>
-                        <p><strong>D.</strong> ${q.options[3]}</p>
-                        <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        <h3>${i + 1}. ${q?.question || ''}</h3>
+                        ${
+                          q?.questionImage
+                            ? `<img src="${q.questionImage}" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;">`
+                            : ''
+                        }
+                        <p>
+                          <strong>A.</strong> ${
+                            q?.options?.[0]?.text || ''
+                          }
+                          ${
+                            q?.options?.[0]?.image
+                              ? `<img src="${q.options[0].image}" alt="Gambar opsi A" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
+                        <p>
+                          <strong>B.</strong> ${
+                            q?.options?.[1]?.text || ''
+                          }
+                          ${
+                            q?.options?.[1]?.image
+                              ? `<img src="${q.options[1].image}" alt="Gambar opsi B" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
+                        <p>
+                          <strong>C.</strong> ${
+                            q?.options?.[2]?.text || ''
+                          }
+                          ${
+                            q?.options?.[2]?.image
+                              ? `<img src="${q.options[2].image}" alt="Gambar opsi C" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
+                        <p>
+                          <strong>D.</strong> ${
+                            q?.options?.[3]?.text || ''
+                          }
+                          ${
+                            q?.options?.[3]?.image
+                              ? `<img src="${q.options[3].image}" alt="Gambar opsi D" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
+                        <p><strong>Jawaban:</strong> ${q?.answer || ''}</p>
                       </article>
                     `
                       )
@@ -477,8 +588,20 @@
                         i + 1
                       }">
                         <span class="question-type">Isian Singkat</span>
-                        <h3>${i + 1}. ${q.question}</h3>
-                        <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        <h3>${i + 1}. ${q?.question || ''}</h3>
+                        ${
+                          q?.questionImage
+                            ? `<img src="${q.questionImage}" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;">`
+                            : ''
+                        }
+                        <p>
+                          <strong>Jawaban:</strong> ${q?.answer || ''}
+                          ${
+                            q?.answerImage
+                              ? `<img src="${q.answerImage}" alt="Gambar jawaban" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
                       </article>
                     `
                       )
@@ -505,8 +628,20 @@
                         i + 1
                       }">
                         <span class="question-type">Esai</span>
-                        <h3>${i + 1}. ${q.question}</h3>
-                        <p><strong>Jawaban:</strong> ${q.answer}</p>
+                        <h3>${i + 1}. ${q?.question || ''}</h3>
+                        ${
+                          q?.questionImage
+                            ? `<img src="${q.questionImage}" alt="Gambar soal" style="max-width: 200px; display: block; margin-bottom: 10px;">`
+                            : ''
+                        }
+                        <p>
+                          <strong>Jawaban:</strong> ${q?.answer || ''}
+                          ${
+                            q?.answerImage
+                              ? `<img src="${q.answerImage}" alt="Gambar jawaban" style="max-width: 150px; display: block; margin-bottom: 5px;">`
+                              : ''
+                          }
+                        </p>
                       </article>
                     `
                       )

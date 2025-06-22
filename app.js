@@ -19,7 +19,8 @@ app.use(flash());
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json());
-app.use(fileUpload());
+// Remove express-fileupload to avoid conflict with multer
+// app.use(fileUpload());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // View engine setup
@@ -38,6 +39,10 @@ app.use((err, req, res, next) => {
 
 // Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
