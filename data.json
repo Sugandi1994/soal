@@ -1,54 +1,5 @@
 {
-  "mc": [
-    {
-      "id": "6188c6f3-b435-4d65-99e8-8950820f5354",
-      "question": "asdasdasd",
-      "questionImage": null,
-      "options": [
-        {
-          "text": "jhgkjg",
-          "image": null
-        },
-        {
-          "text": "kjhkhkjh",
-          "image": null
-        },
-        {
-          "text": "khkjhkjh",
-          "image": null
-        },
-        {
-          "text": "khkjhkjh",
-          "image": null
-        }
-      ],
-      "answer": "A"
-    },
-    {
-      "id": "bbc70699-b998-44b9-9099-7ed82d4f4ab0",
-      "question": "siapa",
-      "questionImage": "/uploads/questionImage-1750591047701-204334450",
-      "options": [
-        {
-          "text": "jhgkhkjh",
-          "image": null
-        },
-        {
-          "text": "khkjhkjh",
-          "image": null
-        },
-        {
-          "text": "khkjhkhl",
-          "image": null
-        },
-        {
-          "text": "lhlkkjgkg",
-          "image": null
-        }
-      ],
-      "answer": "A"
-    }
-  ],
+  "mc": [],
   "shortAnswer": [],
   "essay": []
 }

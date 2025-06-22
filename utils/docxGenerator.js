@@ -1,4 +1,6 @@
-const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer } = require('docx');
+const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer, ImageRun } = require('docx');
+const fs = require('fs');
+const path = require('path');
 
 async function generateDocx(exam) {
   const doc = new Document({
@@ -10,9 +12,9 @@ async function generateDocx(exam) {
           alignment: AlignmentType.CENTER,
           spacing: { after: 400 }
         }),
-        ...generateMcQuestions(exam.mc),
-        ...generateShortQuestions(exam.shortAnswer),
-        ...generateEssayQuestions(exam.essay)
+        ...await generateMcQuestions(exam.mc),
+        ...await generateShortQuestions(exam.shortAnswer),
+        ...await generateEssayQuestions(exam.essay)
       ]
     }]
   });
@@ -20,7 +22,7 @@ async function generateDocx(exam) {
   return Packer.toBuffer(doc);
 }
 
-function generateMcQuestions(questions) {
+async function generateMcQuestions(questions) {
   const elements = [];
   
   if (questions.length > 0) {
@@ -32,23 +34,41 @@ function generateMcQuestions(questions) {
       })
     );
     
-    questions.forEach((q, i) => {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
       elements.push(
         new Paragraph({
           text: `${i + 1}. ${q.question}`,
           spacing: { after: 100 }
         })
       );
+      if (q.questionImage) {
+        const img = await loadImage(q.questionImage);
+        if (img) {
+          elements.push(new Paragraph({
+            children: [img],
+            spacing: { after: 100 }
+          }));
+        }
+      }
       
-      q.options.forEach((opt, j) => {
+      for (let j = 0; j < q.options.length; j++) {
+        const opt = q.options[j];
         const optionText = typeof opt === 'object' && opt !== null ? opt.text : opt;
+        const children = [new TextRun(`${String.fromCharCode(65 + j)}. ${optionText}`)];
+        if (typeof opt === 'object' && opt !== null && opt.image) {
+          const img = await loadImage(opt.image);
+          if (img) {
+            children.push(new Paragraph({ children: [img], indent: { left: 400 }, spacing: { after: 100 } }));
+          }
+        }
         elements.push(
           new Paragraph({
-            text: `${String.fromCharCode(65 + j)}. ${optionText}`,
+            children: children,
             indent: { left: 400 }
           })
         );
-      });
+      }
       
       elements.push(
         new Paragraph({
@@ -56,13 +76,13 @@ function generateMcQuestions(questions) {
           spacing: { before: 100, after: 200 }
         })
       );
-    });
+    }
   }
   
   return elements;
 }
 
-function generateShortQuestions(questions) {
+async function generateShortQuestions(questions) {
   const elements = [];
   
   if (questions.length > 0) {
@@ -74,13 +94,23 @@ function generateShortQuestions(questions) {
       })
     );
     
-    questions.forEach((q, i) => {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
       elements.push(
         new Paragraph({
           text: `${i + 1}. ${q.question}`,
           spacing: { after: 100 }
         })
       );
+      if (q.questionImage) {
+        const img = await loadImage(q.questionImage);
+        if (img) {
+          elements.push(new Paragraph({
+            children: [img],
+            spacing: { after: 100 }
+          }));
+        }
+      }
       
       elements.push(
         new Paragraph({
@@ -88,13 +118,22 @@ function generateShortQuestions(questions) {
           spacing: { before: 100, after: 200 }
         })
       );
-    });
+      if (q.answerImage) {
+        const img = await loadImage(q.answerImage);
+        if (img) {
+          elements.push(new Paragraph({
+            children: [img],
+            spacing: { after: 100 }
+          }));
+        }
+      }
+    }
   }
   
   return elements;
 }
 
-function generateEssayQuestions(questions) {
+async function generateEssayQuestions(questions) {
   const elements = [];
   
   if (questions.length > 0) {
@@ -106,13 +145,23 @@ function generateEssayQuestions(questions) {
       })
     );
     
-    questions.forEach((q, i) => {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
       elements.push(
         new Paragraph({
           text: `${i + 1}. ${q.question}`,
           spacing: { after: 100 }
         })
       );
+      if (q.questionImage) {
+        const img = await loadImage(q.questionImage);
+        if (img) {
+          elements.push(new Paragraph({
+            children: [img],
+            spacing: { after: 100 }
+          }));
+        }
+      }
       
       elements.push(
         new Paragraph({
@@ -120,10 +169,40 @@ function generateEssayQuestions(questions) {
           spacing: { before: 100, after: 200 }
         })
       );
-    });
+      if (q.answerImage) {
+        const img = await loadImage(q.answerImage);
+        if (img) {
+          elements.push(new Paragraph({
+            children: [img],
+            spacing: { after: 100 }
+          }));
+        }
+      }
+    }
   }
   
   return elements;
+}
+
+async function loadImage(imagePath) {
+  try {
+    // imagePath is expected to be like '/uploads/filename.ext'
+    const filePath = path.join(__dirname, '..', 'public', imagePath);
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    const imageBuffer = fs.readFileSync(filePath);
+    return new ImageRun({
+      data: imageBuffer,
+      transformation: {
+        width: 300,
+        height: 200,
+      },
+    });
+  } catch (err) {
+    console.error('Error loading image for docx:', err);
+    return null;
+  }
 }
 
 module.exports = { generateDocx };
