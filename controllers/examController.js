@@ -221,12 +221,12 @@ exports.resetQuestions = (req, res) => {
 };
 
 exports.importDocx = async (req, res) => {
-  if (!req.file) {
-    req.flash('error', 'Tidak ada file yang diunggah');
-    return res.redirect('/');
-  }
-
   try {
+    if (!req.file || !req.file.buffer) {
+      req.flash('error', 'Tidak ada file yang diunggah atau file tidak valid');
+      return res.redirect('/');
+    }
+
     const examData = await parseDocx(req.file.buffer);
 
     // Validasi hasil parsing
